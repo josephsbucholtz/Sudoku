@@ -24,12 +24,17 @@ public:
 		{
 			throw std::runtime_error("Invalid Sudoku Board.");
 		}
+		if (!backtrack(initState))
+		{
+			throw std::runtime_error("Unsovlable Sudoku Board");
+		}
 
+		//initialize starting positions
 		for (size_t row {}; row < ROWS; row++)
 		{
 			for (size_t col {}; col < COLUMNS; col++)
 			{
-				if (initState[row][col] != 0) 
+				if (grid_[row][col] != 0) 
 				{
 					initPositions_[row][col] = true;
 				}
@@ -39,11 +44,6 @@ public:
 				}
 			}
 		}
-
-		if (!backtrack(initState))
-		{
-			throw std::runtime_error("Unsovlable Sudoku Board");
-		}
 	}
 
 	//No copy 
@@ -51,12 +51,12 @@ public:
 	SudokuGrid& operator=(const SudokuGrid&) = delete;
 
 	//Move semantics 
-	SudokuGrid(SudokuGrid&& other) :
-		grid_(other.grid_),
-		initPositions_(other.initPositions_)
+	SudokuGrid(SudokuGrid&& other) noexcept :
+		grid_(std::move(other.grid_)),
+		initPositions_(std::move(other.initPositions_))
 	{}
 
-	SudokuGrid& operator=(SudokuGrid&& other)
+	SudokuGrid& operator=(SudokuGrid&& other) noexcept
 	{
 		if (this != &other)
 		{
@@ -75,7 +75,7 @@ public:
 	 * we have to check consistency as well.
 	 */
 	[[nodiscard]]
-	bool is_complete(const Grid& board)
+	bool is_complete(const Grid& board) const
 	{
 		for (size_t row {}; row < ROWS; row++)
 		{
@@ -97,7 +97,7 @@ public:
 	}
 
 	[[nodiscard]]
-	bool is_consistent(Cell cell, int value, const Grid& board)  
+	bool is_consistent(Cell cell, int value, const Grid& board) const
 	{
 
 		// check row
@@ -214,7 +214,7 @@ public:
 		}
 	}
 
-	bool isValidBoard(const Grid& board)
+	bool isValidBoard(const Grid& board) const
 	{
 		for (size_t row {}; row < ROWS; row++)
 		{
