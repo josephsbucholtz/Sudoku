@@ -35,11 +35,18 @@ int main()
 
 	printf("\n");
 
-	// printf("\n");
-	// printf("RESET BOARD ---- \n");
-	// sg.reset();
-	// sg.printBoard();
-	//
+	sg.solve();
+	printf("\n");
+
+	printf("SOLVED BOARD ---- \n");
+	sg.printBoard();
+
+	printf("\n");
+
+	printf("RESET BOARD ---- \n");
+	sg.reset();
+	sg.printBoard();
+
 
 	return 0;
 }

@@ -9,7 +9,7 @@
 #define COLUMNS 9
 
 using Grid = std::array<std::array<int, 9>, 9>;
-using Cell = std::pair<int, int>;
+using Cell = std::pair<size_t, size_t>;
 
 
 class SudokuGrid {
@@ -17,20 +17,19 @@ public:
 	//
 	//Need to check if initState is valid!
 	//
-	explicit SudokuGrid(Grid initState)
+	explicit SudokuGrid(Grid initState) :
+		grid_(initState)
 	{
-		if (!backtrack(initState))
+		if (!isValidBoard(initState))
 		{
-			throw std::runtime_error("Invalid/Unsovlable Sudoku Board");
+			throw std::runtime_error("Invalid Sudoku Board.");
 		}
-
-		grid_ = std::move(initState);
 
 		for (size_t row {}; row < ROWS; row++)
 		{
 			for (size_t col {}; col < COLUMNS; col++)
 			{
-				if (grid_[row][col] != 0) 
+				if (initState[row][col] != 0) 
 				{
 					initPositions_[row][col] = true;
 				}
@@ -39,6 +38,11 @@ public:
 					initPositions_[row][col] = false;
 				}
 			}
+		}
+
+		if (!backtrack(initState))
+		{
+			throw std::runtime_error("Unsovlable Sudoku Board");
 		}
 	}
 
@@ -56,8 +60,8 @@ public:
 	{
 		if (this != &other)
 		{
-			grid_ = other.grid_;
-			initPositions_ = other.initPositions_;
+			grid_ = std::move(other.grid_);
+			initPositions_ = std::move(other.initPositions_);
 		}
 
 		return *this;
@@ -84,6 +88,11 @@ public:
 			}
 		}
 
+		if (!isValidBoard(board))
+		{
+			return false;
+		}
+
 		return true;
 	}
 
@@ -94,7 +103,7 @@ public:
 		// check row
 		for (size_t col {}; col < COLUMNS; col++)
 		{
-			if (board[cell.first][col] == value)
+			if (col != cell.second && board[cell.first][col] == value)
 			{
 				return false;
 			}
@@ -103,22 +112,25 @@ public:
 		// check column
 		for (size_t row {}; row < ROWS; row++)
 		{
-			if (board[row][cell.second] == value)
+			if (row != cell.first && board[row][cell.second] == value)
 			{
 				return false;
 			}
 		}
 
 		//check 3x3 grid
-		int start_row {(cell.first / 3) * 3};
-		int start_col {(cell.second / 3) * 3};
+		int start_row {(static_cast<int>(cell.first) / 3) * 3};
+		int start_col {(static_cast<int>(cell.second) / 3) * 3};
+
 		for (int tg_row { start_row }; tg_row < start_row + 3; tg_row++ )
 		{
 			for (int tg_col { start_col }; tg_col < start_col + 3; tg_col++ )
 			{
-				if (board[tg_row][tg_col] == value)
+				if ((tg_row != static_cast<int>(cell.first) ||
+     				tg_col != static_cast<int>(cell.second)) &&
+    				board[tg_row][tg_col] == value)
 				{
-					return false;
+    				return false;
 				}
 			}
 		}
@@ -142,7 +154,7 @@ public:
 		return Cell();
 	}
 
-	bool backtrack(Grid board)
+	bool backtrack(Grid& board)
 	{
 		if (is_complete(board))
 		{
@@ -219,6 +231,11 @@ public:
 		}
 
 		return true;
+	}
+
+	void solve()
+	{
+		backtrack(grid_);
 	}
 
 private:
