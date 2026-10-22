@@ -2,7 +2,11 @@
 
 #include <array>
 #include <set>
+#include <stdexcept>
 #include <utility>
+
+#define ROWS 9
+#define COLUMNS 9
 
 using Grid = std::array<std::array<int, 9>, 9>;
 using Cell = std::pair<int, int>;
@@ -10,21 +14,29 @@ using Cell = std::pair<int, int>;
 
 class SudokuGrid {
 public:
-	explicit SudokuGrid(Grid initState) : 
-		grid_(initState)
+	//
+	//Need to check if initState is valid!
+	//
+	explicit SudokuGrid(Grid initState)
 	{
-
-		for (size_t row {}; row < 9; row++)
+		if (!backtrack(initState))
 		{
-			for (size_t col {}; col < 9; col++)
+			throw std::runtime_error("Invalid/Unsovlable Sudoku Board");
+		}
+
+		grid_ = std::move(initState);
+
+		for (size_t row {}; row < ROWS; row++)
+		{
+			for (size_t col {}; col < COLUMNS; col++)
 			{
 				if (grid_[row][col] != 0) 
 				{
-					initPositions[row][col] = true;
+					initPositions_[row][col] = true;
 				}
 				else 
 				{
-					initPositions[row][col] = false;
+					initPositions_[row][col] = false;
 				}
 			}
 		}
@@ -36,7 +48,8 @@ public:
 
 	//Move semantics 
 	SudokuGrid(SudokuGrid&& other) :
-		grid_(other.grid_) 
+		grid_(other.grid_),
+		initPositions_(other.initPositions_)
 	{}
 
 	SudokuGrid& operator=(SudokuGrid&& other)
@@ -44,6 +57,7 @@ public:
 		if (this != &other)
 		{
 			grid_ = other.grid_;
+			initPositions_ = other.initPositions_;
 		}
 
 		return *this;
@@ -52,15 +66,18 @@ public:
 
 	/*
 	 * Not checking if it is also consistent.
+	 * For the moment, it works because initial board is valid and 
+	 * we solve with backtrack. If we want users to solve, then
+	 * we have to check consistency as well.
 	 */
 	[[nodiscard]]
-	bool is_complete()
+	bool is_complete(const Grid& board)
 	{
-		for (size_t row {}; row < 9; row++)
+		for (size_t row {}; row < ROWS; row++)
 		{
-			for (size_t col {}; col < 9; col++)
+			for (size_t col {}; col < COLUMNS; col++)
 			{
-				if (grid_[row][col] == 0) 
+				if (board[row][col] == 0) 
 				{
 					return false;
 				}
@@ -71,22 +88,22 @@ public:
 	}
 
 	[[nodiscard]]
-	bool is_consistent(Cell cell, int value)  
+	bool is_consistent(Cell cell, int value, const Grid& board)  
 	{
 
 		// check row
-		for (size_t col {}; col < 9; col++)
+		for (size_t col {}; col < COLUMNS; col++)
 		{
-			if (grid_[cell.first][col] == value)
+			if (board[cell.first][col] == value)
 			{
 				return false;
 			}
 		}
 
 		// check column
-		for (size_t row {}; row < 9; row++)
+		for (size_t row {}; row < ROWS; row++)
 		{
-			if (grid_[row][cell.second] == value)
+			if (board[row][cell.second] == value)
 			{
 				return false;
 			}
@@ -99,7 +116,7 @@ public:
 		{
 			for (int tg_col { start_col }; tg_col < start_col + 3; tg_col++ )
 			{
-				if (grid_[tg_row][tg_col] == value)
+				if (board[tg_row][tg_col] == value)
 				{
 					return false;
 				}
@@ -109,13 +126,13 @@ public:
 		return true;
 	}
 
-	Cell select_unassigned_variable()
+	Cell select_unassigned_variable(const Grid& board)
 	{
-		for (size_t row {}; row < 9; row++)
+		for (size_t row {}; row < ROWS; row++)
 		{
-			for (size_t col {}; col < 9; col++)
+			for (size_t col {}; col < COLUMNS; col++)
 			{
-				if (grid_[row][col] == 0) 
+				if (board[row][col] == 0) 
 				{
 					return Cell(row, col);
 				}
@@ -125,35 +142,45 @@ public:
 		return Cell();
 	}
 
-	bool backtrack()
+	bool backtrack(Grid board)
 	{
-		if (is_complete())
+		if (is_complete(board))
 		{
 			return true;
 		}
 
-		Cell current_cell { select_unassigned_variable() };
+		Cell current_cell { select_unassigned_variable(board) };
 
 		for (auto value : ordered_domain_values)
 		{
-			if (is_consistent(current_cell, value))
+			if (is_consistent(current_cell, value, board))
 			{
-				grid_[current_cell.first][current_cell.second] = value;
-				if (backtrack())
+				board[current_cell.first][current_cell.second] = value;
+				if (backtrack(board))
 				{
 					return true;
 				}
-				grid_[current_cell.first][current_cell.second] = 0;
+				board[current_cell.first][current_cell.second] = 0;
 			}
 		}
 		return false;
 	}
 
+	bool backtracking_AC3(Grid board)
+	{
+		if (is_complete(board))
+		{
+			return true;
+		}
+
+		return false;
+	}
+
 	void printBoard()
 	{
-		for (size_t row {}; row < 9; row++)
+		for (size_t row {}; row < ROWS; row++)
 		{
-			for (size_t col {}; col < 9; col++)
+			for (size_t col {}; col < COLUMNS; col++)
 			{
 				printf("%d ", grid_[row][col]);
 			}
@@ -161,18 +188,13 @@ public:
 		}
 	}
 
-	int capacity()
-	{
-		return grid_.size() * grid_[0].size();
-	}
-
 	void reset() 
 	{
-		for (size_t row {}; row < 9; row++)
+		for (size_t row {}; row < ROWS; row++)
 		{
-			for (size_t col {}; col < 9; col++)
+			for (size_t col {}; col < COLUMNS; col++)
 			{
-				if (!initPositions[row][col])
+				if (!initPositions_[row][col])
 				{
 					grid_[row][col] = 0;
 				}
@@ -180,8 +202,27 @@ public:
 		}
 	}
 
+	bool isValidBoard(const Grid& board)
+	{
+		for (size_t row {}; row < ROWS; row++)
+		{
+			for (size_t col {}; col < COLUMNS; col++)
+			{
+				if (board[row][col] != 0)
+				{
+					if (!is_consistent(Cell(row, col), board[row][col], board))
+					{
+						return false;
+					}
+				}
+			}
+		}
+
+		return true;
+	}
+
 private:
 	Grid grid_ {};
-	std::array<std::array<bool, 9>, 9> initPositions {};
+	std::array<std::array<bool, 9>, 9> initPositions_ {};
 	std::set<int> ordered_domain_values {1, 2, 3, 4, 5, 6, 7, 8, 9};
 };
