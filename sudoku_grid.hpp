@@ -1,3 +1,6 @@
+#include <cstdio>
+
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -13,6 +16,29 @@ public:
 
 	}
 
+	//No copy 
+	SudokuGrid(const SudokuGrid&) = delete;
+	SudokuGrid& operator=(const SudokuGrid&) = delete;
+
+	//Move semantics 
+	SudokuGrid(SudokuGrid&& other) :
+		grid_(other.grid_) 
+	{}
+
+	SudokuGrid& operator=(SudokuGrid&& other)
+	{
+		if (this != &other)
+		{
+			grid_ = other.grid_;
+		}
+
+		return *this;
+	}
+
+
+	/*
+	 * Not checking if it is also consistent.
+	 */
 	[[nodiscard]]
 	bool is_complete()
 	{
@@ -30,6 +56,7 @@ public:
 		return true;
 	}
 
+	[[nodiscard]]
 	bool is_consistent(Cell cell, int value)  
 	{
 
@@ -68,9 +95,60 @@ public:
 		return true;
 	}
 
+	Cell select_unassigned_variable()
+	{
+		for (size_t row {}; row < 9; row++)
+		{
+			for (size_t col {}; col < 9; col++)
+			{
+				if (grid_[row][col] == 0) 
+				{
+					return Cell(row, col);
+				}
+			}
+		}
 
+		return Cell();
+	}
+
+	bool backtrack()
+	{
+		if (is_complete())
+		{
+			return true;
+		}
+
+		Cell current_cell { select_unassigned_variable() };
+
+		for (auto value : ordered_domain_values)
+		{
+			if (is_consistent(current_cell, value))
+			{
+				grid_[current_cell.first][current_cell.second] = value;
+				if (backtrack())
+				{
+					return true;
+				}
+				grid_[current_cell.first][current_cell.second] = 0;
+			}
+		}
+		return false;
+	}
+
+	void printBoard()
+	{
+		for (size_t row {}; row < 9; row++)
+		{
+			for (size_t col {}; col < 9; col++)
+			{
+				printf("%d ", grid_[row][col]);
+			}
+			printf("\n");
+		}
+	}
 
 
 private:
 	Grid grid_ {};
+	std::set<int> ordered_domain_values {1, 2, 3, 4, 5, 6, 7, 8, 9};
 };
