@@ -10,9 +10,9 @@ using Cell = std::pair<int, int>;
 
 class SudokuGrid {
 public:
-	explicit SudokuGrid(Grid initState)
+	explicit SudokuGrid(Grid initState) : 
+		grid_(initState)
 	{
-		grid_ = std::move(initState);
 
 		for (size_t row {}; row < 9; row++)
 		{
