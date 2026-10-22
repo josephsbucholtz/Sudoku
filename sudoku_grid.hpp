@@ -1,19 +1,33 @@
 #include <cstdio>
 
+#include <array>
 #include <set>
 #include <utility>
-#include <vector>
 
-using Grid = std::vector<std::vector<int>>;
+using Grid = std::array<std::array<int, 9>, 9>;
 using Cell = std::pair<int, int>;
 
 
 class SudokuGrid {
 public:
-	explicit SudokuGrid(Grid initState) : 
-	grid_(initState)
+	explicit SudokuGrid(Grid initState)
 	{
+		grid_ = std::move(initState);
 
+		for (size_t row {}; row < 9; row++)
+		{
+			for (size_t col {}; col < 9; col++)
+			{
+				if (grid_[row][col] != 0) 
+				{
+					initPositions[row][col] = true;
+				}
+				else 
+				{
+					initPositions[row][col] = false;
+				}
+			}
+		}
 	}
 
 	//No copy 
@@ -147,8 +161,27 @@ public:
 		}
 	}
 
+	int capacity()
+	{
+		return grid_.size() * grid_[0].size();
+	}
+
+	void reset() 
+	{
+		for (size_t row {}; row < 9; row++)
+		{
+			for (size_t col {}; col < 9; col++)
+			{
+				if (!initPositions[row][col])
+				{
+					grid_[row][col] = 0;
+				}
+			}
+		}
+	}
 
 private:
 	Grid grid_ {};
+	std::array<std::array<bool, 9>, 9> initPositions {};
 	std::set<int> ordered_domain_values {1, 2, 3, 4, 5, 6, 7, 8, 9};
 };
