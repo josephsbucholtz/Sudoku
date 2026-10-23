@@ -4,18 +4,19 @@
 #include <set>
 #include <stdexcept>
 #include <utility>
+#include <vector>
 
 #define ROWS 9
 #define COLUMNS 9
 
 using Grid = std::array<std::array<int, 9>, 9>;
 using Cell = std::pair<size_t, size_t>;
+using Domain = std::array<std::array<std::set<int>, 9>, 9>;
 
 
 class SudokuGrid {
 public:
 	//
-	//Need to check if initState is valid!
 	//
 	explicit SudokuGrid(Grid initState) :
 		grid_(initState)
@@ -67,12 +68,26 @@ public:
 		return *this;
 	}
 
+	bool isValidBoard(const Grid& board) const
+	{
+		for (size_t row {}; row < ROWS; row++)
+		{
+			for (size_t col {}; col < COLUMNS; col++)
+			{
+				if (board[row][col] != 0)
+				{
+					if (!is_consistent(Cell(row, col), board[row][col], board))
+					{
+						return false;
+					}
+				}
+			}
+		}
+
+		return true;
+	}
 
 	/*
-	 * Not checking if it is also consistent.
-	 * For the moment, it works because initial board is valid and 
-	 * we solve with backtrack. If we want users to solve, then
-	 * we have to check consistency as well.
 	 */
 	[[nodiscard]]
 	bool is_complete(const Grid& board) const
@@ -154,40 +169,6 @@ public:
 		return Cell();
 	}
 
-	bool backtrack(Grid& board)
-	{
-		if (is_complete(board))
-		{
-			return true;
-		}
-
-		Cell current_cell { select_unassigned_variable(board) };
-
-		for (auto value : ordered_domain_values)
-		{
-			if (is_consistent(current_cell, value, board))
-			{
-				board[current_cell.first][current_cell.second] = value;
-				if (backtrack(board))
-				{
-					return true;
-				}
-				board[current_cell.first][current_cell.second] = 0;
-			}
-		}
-		return false;
-	}
-
-	bool backtracking_AC3(Grid board)
-	{
-		if (is_complete(board))
-		{
-			return true;
-		}
-
-		return false;
-	}
-
 	void printBoard()
 	{
 		for (size_t row {}; row < ROWS; row++)
@@ -214,32 +195,102 @@ public:
 		}
 	}
 
-	bool isValidBoard(const Grid& board) const
-	{
-		for (size_t row {}; row < ROWS; row++)
-		{
-			for (size_t col {}; col < COLUMNS; col++)
-			{
-				if (board[row][col] != 0)
-				{
-					if (!is_consistent(Cell(row, col), board[row][col], board))
-					{
-						return false;
-					}
-				}
-			}
-		}
-
-		return true;
-	}
-
 	void solve()
 	{
 		backtrack(grid_);
 	}
 
+	bool backtrack(Grid& board)
+	{
+		if (is_complete(board))
+		{
+			return true;
+		}
+
+		Cell current_cell { select_unassigned_variable(board) };
+
+		for (auto value : ordered_domain_values)
+		{
+			if (is_consistent(current_cell, value, board))
+			{
+				board[current_cell.first][current_cell.second] = value;
+				if (backtrack(board))
+				{
+					return true;
+				}
+				board[current_cell.first][current_cell.second] = 0;
+			}
+		}
+		return false;
+	}
+
+	void domains_for_grid()
+	{
+		for (size_t row {}; row < ROWS; row++)
+		{
+			for (size_t col {}; col < COLUMNS; col++)
+			{
+				if (grid_[row][col] > 0)
+				{
+					grid_domains_[row][col] = {grid_[row][col]};
+				}
+				else if (grid_[row][col] == 0)
+				{
+					grid_domains_[row][col] = ordered_domain_values;
+				}
+			}
+		}
+
+	}
+
+	bool ac_3()
+	{
+
+		return false;
+	}
+
+	bool backtracking_AC3(Grid& board)
+	{
+		if (is_complete(board))
+		{
+			return true;
+		}
+
+		Cell current_cell { select_unassigned_variable(board) };
+
+		for (auto value : ordered_domain_values)
+		{
+			if (is_consistent(current_cell, value, board))
+			{
+				board[current_cell.first][current_cell.second] = value;
+
+				domains_for_grid();
+
+				if (ac_3())
+				{
+					std::vector<Cell> forced {};
+
+
+					if (backtrack(board))
+					{
+						return true;
+					}
+
+					for (auto cell : forced)
+					{
+						board[cell.first][cell.second] = 0;
+					}
+				}
+				board[current_cell.first][current_cell.second] = 0;
+			}
+		}
+		return false;
+	}
+
+
 private:
 	Grid grid_ {};
+	Domain grid_domains_ {};
 	std::array<std::array<bool, 9>, 9> initPositions_ {};
 	std::set<int> ordered_domain_values {1, 2, 3, 4, 5, 6, 7, 8, 9};
 };
