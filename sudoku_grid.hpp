@@ -248,6 +248,33 @@ public:
 	{
 		std::set<Cell> neighbors_set {};
 
+		for (size_t k {}; k < 9; k++)
+		{
+			if (k != cell.first)
+			{
+				neighbors_set.insert(Cell(k, cell.second));
+			}
+			if (k != cell.first)
+			{
+				neighbors_set.insert(Cell(cell.first, k));
+			}
+		}
+
+		// ADD 3x3 neighbors
+		int start_row {(static_cast<int>(cell.first) / 3) * 3};
+		int start_col {(static_cast<int>(cell.second) / 3) * 3};
+
+		for (int tg_row { start_row }; tg_row < start_row + 3; tg_row++ )
+		{
+			for (int tg_col { start_col }; tg_col < start_col + 3; tg_col++ )
+			{
+				if (tg_row != cell.first && tg_col != cell.second)
+				{
+					neighbors_set.insert(Cell(tg_row, tg_col));
+				}
+			}
+		}
+
 		return neighbors_set;
 	}
 
