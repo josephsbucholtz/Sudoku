@@ -1,6 +1,7 @@
 #include <cstdio>
 
 #include <array>
+#include <queue>
 #include <set>
 #include <stdexcept>
 #include <utility>
@@ -243,10 +244,53 @@ public:
 
 	}
 
+	std::set<Cell> neighbors(const Cell& cell)
+	{
+		std::set<Cell> neighbors_set {};
+
+		return neighbors_set;
+	}
+
+	bool revise(Cell cell_1, Cell cell_2)
+	{
+		
+		return true;
+	}
+
 	bool ac_3()
 	{
+		std::queue<std::pair<Cell, Cell>> queue {};
+		for (size_t row; row < ROWS; row++)
+		{
+			for (size_t col; col < COLUMNS; col++) 
+			{
+				Cell Xi(row, col);
+				std::set<Cell> cell_neighbors = neighbors(Xi);
+				for (Cell cell : cell_neighbors)
+				{
+					std::pair<Cell, Cell> item { Xi, cell};
+					queue.push(item);
+				}
+			}
+		}
 
-		return false;
+		while (!queue.empty())
+		{
+			std::pair<Cell, Cell> curr_cell_pair { queue.front() };
+			queue.pop();
+			
+
+			if (revise(curr_cell_pair.first, curr_cell_pair.second))
+			{
+				if (grid_domains_[curr_cell_pair.first.first][curr_cell_pair.first.second].size() == 0)
+				{
+					return false;
+				}
+
+			}
+		}
+
+		return true;
 	}
 
 	bool backtracking_AC3(Grid& board)
@@ -270,13 +314,25 @@ public:
 				{
 					std::vector<Cell> forced {};
 
+					for (size_t row; row < ROWS; row++)
+					{
+						for (size_t col; col < COLUMNS; col++) 
+						{
+							if (board[row][col] == 0 && grid_domains_[row][col].size() == 1)
+							{
+								auto it { grid_domains_[row][col].begin() };
+								board[row][col] = *it;
+								forced.push_back(Cell(row, col));
+							}
+						}
+					}
 
-					if (backtrack(board))
+					if (backtracking_AC3(board))
 					{
 						return true;
 					}
 
-					for (auto cell : forced)
+					for (Cell cell : forced)
 					{
 						board[cell.first][cell.second] = 0;
 					}
@@ -284,6 +340,7 @@ public:
 				board[current_cell.first][current_cell.second] = 0;
 			}
 		}
+
 		return false;
 	}
 
