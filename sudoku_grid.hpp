@@ -198,7 +198,8 @@ public:
 
 	void solve()
 	{
-		backtrack(grid_);
+		// backtrack(grid_);
+		backtracking_AC3(grid_);
 	}
 
 	bool backtrack(Grid& board)
@@ -278,10 +279,22 @@ public:
 		return neighbors_set;
 	}
 
-	bool revise(Cell cell_1, Cell cell_2)
+	bool revise(const Cell& cell_1, const Cell& cell_2)
 	{
-		
-		return true;
+		std::set<int>& i_domain = grid_domains_[cell_1.first][cell_1.second];
+		const std::set<int>& j_domain = grid_domains_[cell_2.first][cell_2.second];
+
+		if (j_domain.size() == 1)
+		{
+			int value { *j_domain.begin() };
+			if (i_domain.find(value) != i_domain.end())
+			{
+				i_domain.erase(value);
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	bool ac_3()
