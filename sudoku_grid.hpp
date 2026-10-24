@@ -176,7 +176,7 @@ public:
 		return Cell();
 	}
 
-	Cell select_unassigned_variable_MRV()
+	Cell select_unassigned_variable_MRV(const Grid& board)
 	{
 		Cell smalleset_domain {};
 		int minimum_length { 10 };
@@ -184,12 +184,17 @@ public:
 		{
 			for (size_t col {}; col < COLUMNS; col++)
 			{
-				if (grid_[row][col] == 0)
+				if (board[row][col] == 0)
 				{
 					if (grid_domains_[row][col].size() < minimum_length)
 					{
 						minimum_length = grid_domains_[row][col].size();
 						smalleset_domain = {row, col};
+
+						if (minimum_length == 1)
+						{
+							return smalleset_domain;
+						}
 					}
 				}
 
@@ -230,9 +235,11 @@ public:
 		switch (algo) {
 			case Algo::BACKTRACK:
 				backtrack(grid_);
+				break;
 			case Algo::AC3:
 				domains_for_grid();
 				backtracking_AC3(grid_);
+				break;
 			default:
 				break;
 		}
@@ -375,7 +382,7 @@ public:
 			return true;
 		}
 
-		Cell current_cell { select_unassigned_variable_MRV() };
+		Cell current_cell { select_unassigned_variable_MRV(board) };
 
 		std::unordered_set<int> canidates = grid_domains_[current_cell.first][current_cell.second];
 
@@ -392,9 +399,9 @@ public:
 				{
 					std::vector<Cell> forced {};
 
-					for (size_t row; row < ROWS; row++)
+					for (size_t row {}; row < ROWS; row++)
 					{
-						for (size_t col; col < COLUMNS; col++) 
+						for (size_t col {}; col < COLUMNS; col++) 
 						{
 							if (board[row][col] == 0 && grid_domains_[row][col].size() == 1)
 							{
