@@ -24,12 +24,22 @@ git clone <repo>
 cd Sudoku-Solver
 ```
 
+
 ## Run Instructions
 
 ```bash
 g++ sudoku_grid.hpp main.cpp -o build
 ./build
 ```
+
+## GUI Demo 
+git switch ui 
+
+```bash
+g++ sudoku_grid.hpp main.cpp -o build
+python3 sudoku_gui.py
+```
+
 
 ## Future Considerations
 
