@@ -204,6 +204,18 @@ public:
 		return smalleset_domain;
 	}
 
+	size_t nodes(Algo algo)
+	{
+		if (algo == Algo::BACKTRACK)
+		{
+			return nodes_backtrack_;
+		} else 
+		{
+			return nodes_AC3_;
+		}
+
+	}
+
 	void printBoard()
 	{
 		for (size_t row {}; row < ROWS; row++)
@@ -247,6 +259,7 @@ public:
 
 	bool backtrack(Grid& board)
 	{
+		++nodes_backtrack_;
 		if (is_complete(board))
 		{
 			return true;
@@ -384,6 +397,7 @@ public:
 
 	bool backtracking_AC3(Grid& board)
 	{
+		++nodes_AC3_;
 		if (is_complete(board))
 		{
 			return true;
@@ -441,6 +455,8 @@ public:
 private:
 	Grid grid_ {};
 	Domain grid_domains_ {};
+	size_t nodes_backtrack_ {};
+	size_t nodes_AC3_ {};
 	std::array<std::array<bool, 9>, 9> initPositions_ {};
 	std::unordered_set<int> ordered_domain_values {1, 2, 3, 4, 5, 6, 7, 8, 9};
 };

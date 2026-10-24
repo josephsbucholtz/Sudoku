@@ -53,7 +53,9 @@ int main()
 	auto AC3_time = std::chrono::duration_cast<std::chrono::microseconds>(stop_AC3 - start_AC3);
 
 	std::cout << "BACKTRACK performance: " << backtrack_time.count() << "μs\n";
+	std::cout << "BACKTRACK # of nodes: " << sg.nodes(Algo::BACKTRACK) << "\n";
 	std::cout << "AC3 performance: " << AC3_time.count() << "μs\n";
+	std::cout << "AC3 # of nodes: " << sg.nodes(Algo::AC3) << "\n";
 
 
 	// printf("SOLVED BOARD ---- \n");
