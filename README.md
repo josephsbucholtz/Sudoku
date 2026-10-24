@@ -32,7 +32,7 @@ g++ sudoku_grid.hpp main.cpp -o build
 ./build
 ```
 
-## GUI Demo 
+# GUI Demo 
 
 ```bash
 git switch ui 
