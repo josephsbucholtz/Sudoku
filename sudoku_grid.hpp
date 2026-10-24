@@ -364,11 +364,18 @@ public:
 
 			if (revise(curr_cell_pair.first, curr_cell_pair.second))
 			{
-				if (grid_domains_[curr_cell_pair.first.first][curr_cell_pair.first.second].size() == 0)
+				if (grid_domains_[curr_cell_pair.first.first][curr_cell_pair.first.second].empty())
 				{
 					return false;
 				}
 
+				for (const Cell& neighbor : neighbors(curr_cell_pair.first))
+				{
+					if (neighbor != curr_cell_pair.second)
+					{
+						queue.push({neighbor, curr_cell_pair.first});
+					}
+				}
 			}
 		}
 
