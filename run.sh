@@ -1,1 +1,1 @@
-g++ sudoku_grid.hpp main.cpp -o main && ./main
+g++ sudoku_grid.hpp main.cpp -o build && ./build
