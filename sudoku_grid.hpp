@@ -4,6 +4,7 @@
 #include <queue>
 #include <set>
 #include <stdexcept>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -12,7 +13,12 @@
 
 using Grid = std::array<std::array<int, 9>, 9>;
 using Cell = std::pair<size_t, size_t>;
-using Domain = std::array<std::array<std::set<int>, 9>, 9>;
+using Domain = std::array<std::array<std::unordered_set<int>, 9>, 9>;
+
+enum class Algo {
+	BACKTRACK,
+	AC3
+};
 
 
 class SudokuGrid {
@@ -196,10 +202,17 @@ public:
 		}
 	}
 
-	void solve()
+	void solve(Algo algo)
 	{
-		// backtrack(grid_);
-		backtracking_AC3(grid_);
+		switch (algo) {
+			case Algo::BACKTRACK:
+				backtrack(grid_);
+			case Algo::AC3:
+				domains_for_grid();
+				backtracking_AC3(grid_);
+			default:
+				break;
+		}
 	}
 
 	bool backtrack(Grid& board)
@@ -253,11 +266,11 @@ public:
 		{
 			if (k != cell.first)
 			{
-				neighbors_set.insert(Cell(k, cell.second));
+				neighbors_set.insert({k, cell.second});
 			}
-			if (k != cell.first)
+			if (k != cell.second)
 			{
-				neighbors_set.insert(Cell(cell.first, k));
+				neighbors_set.insert({cell.first, k});
 			}
 		}
 
@@ -269,9 +282,9 @@ public:
 		{
 			for (int tg_col { start_col }; tg_col < start_col + 3; tg_col++ )
 			{
-				if (tg_row != cell.first && tg_col != cell.second)
+				if (tg_row != static_cast<int>(cell.first) || tg_col != static_cast<int>(cell.second))
 				{
-					neighbors_set.insert(Cell(tg_row, tg_col));
+					neighbors_set.insert(Cell({static_cast<size_t>(tg_row), static_cast<size_t>(tg_col)}));
 				}
 			}
 		}
@@ -281,8 +294,8 @@ public:
 
 	bool revise(const Cell& cell_1, const Cell& cell_2)
 	{
-		std::set<int>& i_domain = grid_domains_[cell_1.first][cell_1.second];
-		const std::set<int>& j_domain = grid_domains_[cell_2.first][cell_2.second];
+		std::unordered_set<int>& i_domain = grid_domains_[cell_1.first][cell_1.second];
+		const std::unordered_set<int>& j_domain = grid_domains_[cell_2.first][cell_2.second];
 
 		if (j_domain.size() == 1)
 		{
@@ -300,23 +313,22 @@ public:
 	bool ac_3()
 	{
 		std::queue<std::pair<Cell, Cell>> queue {};
-		for (size_t row; row < ROWS; row++)
+		for (size_t row {}; row < ROWS; row++)
 		{
-			for (size_t col; col < COLUMNS; col++) 
+			for (size_t col {}; col < COLUMNS; col++) 
 			{
-				Cell Xi(row, col);
+				Cell Xi {row, col};
 				std::set<Cell> cell_neighbors = neighbors(Xi);
-				for (Cell cell : cell_neighbors)
+				for (const Cell& cell : cell_neighbors)
 				{
-					std::pair<Cell, Cell> item { Xi, cell};
-					queue.push(item);
+					queue.push({Xi, cell});
 				}
 			}
 		}
 
 		while (!queue.empty())
 		{
-			std::pair<Cell, Cell> curr_cell_pair { queue.front() };
+			auto curr_cell_pair { queue.front() };
 			queue.pop();
 			
 
@@ -342,13 +354,16 @@ public:
 
 		Cell current_cell { select_unassigned_variable(board) };
 
-		for (auto value : ordered_domain_values)
+		std::unordered_set<int> canidates = grid_domains_[current_cell.first][current_cell.second];
+
+
+		for (int value : canidates)
 		{
 			if (is_consistent(current_cell, value, board))
 			{
+				Domain saved_domains = grid_domains_;
 				board[current_cell.first][current_cell.second] = value;
-
-				domains_for_grid();
+				grid_domains_[current_cell.first][current_cell.second] = {value};
 
 				if (ac_3())
 				{
@@ -362,7 +377,7 @@ public:
 							{
 								auto it { grid_domains_[row][col].begin() };
 								board[row][col] = *it;
-								forced.push_back(Cell(row, col));
+								forced.push_back({row, col});
 							}
 						}
 					}
@@ -378,6 +393,7 @@ public:
 					}
 				}
 				board[current_cell.first][current_cell.second] = 0;
+				grid_domains_ = std::move(saved_domains);
 			}
 		}
 
@@ -389,5 +405,5 @@ private:
 	Grid grid_ {};
 	Domain grid_domains_ {};
 	std::array<std::array<bool, 9>, 9> initPositions_ {};
-	std::set<int> ordered_domain_values {1, 2, 3, 4, 5, 6, 7, 8, 9};
+	std::unordered_set<int> ordered_domain_values {1, 2, 3, 4, 5, 6, 7, 8, 9};
 };

@@ -1,6 +1,9 @@
 #include <cassert>
 #include <cstdio>
 
+#include <chrono>
+#include <iostream>
+
 #include "sudoku_grid.hpp"
 
 int main() 
@@ -28,25 +31,40 @@ int main()
     	{0,0,7,0,0,0,3,0,0}
 	}};
 
-	SudokuGrid sg(initState);
+	SudokuGrid sg(initial_hard);
 	
 	printf("INTIAL BOARD ---- \n");
 	sg.printBoard();
 
 	printf("\n");
 
-	sg.solve();
-	printf("\n");
+	auto start_backtrack = std::chrono::high_resolution_clock::now();
+	sg.solve(Algo::BACKTRACK);
+	auto stop_backtrack = std::chrono::high_resolution_clock::now();
 
-	printf("SOLVED BOARD ---- \n");
-	sg.printBoard();
-
-	printf("\n");
-
-	printf("RESET BOARD ---- \n");
 	sg.reset();
-	sg.printBoard();
 
+	auto start_AC3 = std::chrono::high_resolution_clock::now();
+	sg.solve(Algo::AC3);
+	auto stop_AC3 = std::chrono::high_resolution_clock::now();
+	printf("\n");
+
+	auto backtrack_time = std::chrono::duration_cast<std::chrono::microseconds>(stop_backtrack - start_backtrack);
+	auto AC3_time = std::chrono::duration_cast<std::chrono::microseconds>(stop_AC3 - start_AC3);
+
+	std::cout << "BACKTRACK performance: " << backtrack_time.count() << "μs\n";
+	std::cout << "AC3 performance: " << AC3_time.count() << "μs\n";
+
+
+	// printf("SOLVED BOARD ---- \n");
+	// sg.printBoard();
+	//
+	// printf("\n");
+	//
+	// printf("RESET BOARD ---- \n");
+	// sg.reset();
+	// sg.printBoard();
+	//
 
 	return 0;
 }
