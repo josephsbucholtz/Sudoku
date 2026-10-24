@@ -1,16 +1,19 @@
 # Sudoku
 
-Sudoku solver using Backtracking and Arc Consistency algorithm.
+A Sudoku solver implemented in C++ using:
 
-# Install Instructions
+- Backtracking
+- Arc Consistency (AC-3)
 
-1. git clone <repo>
-2. cd Sudoku/
+## Installation
+
+```bash
+git clone <repo>
+cd Sudoku
+```
 
 # Run Instructions
-
-# Compile
+```bash
 g++ sudoku_grid.hpp main.cpp -o build
-
-# Run
 ./build
+```
