@@ -45,6 +45,7 @@ int main(int argc, char* argv[])
 
     try {
         SudokuGrid sudoku(board);
+		sudoku.solve(Algo::BACKTRACK);
         print_grid(sudoku.board());
     }
     catch (const std::exception&) {

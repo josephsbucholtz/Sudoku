@@ -233,6 +233,11 @@ public:
 		}
 	}
 
+	void set_value(size_t row, size_t col, int value)
+	{
+		grid_[row][col] = value;
+	}
+
 	void reset() 
 	{
 		for (size_t row {}; row < ROWS; row++)
