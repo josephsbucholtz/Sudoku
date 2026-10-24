@@ -176,6 +176,29 @@ public:
 		return Cell();
 	}
 
+	Cell select_unassigned_variable_MRV()
+	{
+		Cell smalleset_domain {};
+		int minimum_length { 10 };
+		for (size_t row {}; row < ROWS; row++)
+		{
+			for (size_t col {}; col < COLUMNS; col++)
+			{
+				if (grid_[row][col] == 0)
+				{
+					if (grid_domains_[row][col].size() < minimum_length)
+					{
+						minimum_length = grid_domains_[row][col].size();
+						smalleset_domain = {row, col};
+					}
+				}
+
+			}
+		}
+
+		return smalleset_domain;
+	}
+
 	void printBoard()
 	{
 		for (size_t row {}; row < ROWS; row++)
@@ -352,7 +375,7 @@ public:
 			return true;
 		}
 
-		Cell current_cell { select_unassigned_variable(board) };
+		Cell current_cell { select_unassigned_variable_MRV() };
 
 		std::unordered_set<int> canidates = grid_domains_[current_cell.first][current_cell.second];
 
