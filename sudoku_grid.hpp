@@ -216,6 +216,11 @@ public:
 
 	}
 
+	const Grid &board() const
+	{
+		return grid_;
+	}
+
 	void printBoard()
 	{
 		for (size_t row {}; row < ROWS; row++)
