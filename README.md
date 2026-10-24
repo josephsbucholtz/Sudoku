@@ -33,9 +33,9 @@ g++ sudoku_grid.hpp main.cpp -o build
 ```
 
 ## GUI Demo 
-git switch ui 
 
 ```bash
+git switch ui 
 g++ sudoku_grid.hpp main.cpp -o build
 python3 sudoku_gui.py
 ```
